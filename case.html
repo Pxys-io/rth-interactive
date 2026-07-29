@@ -210,9 +210,9 @@
         const FILL='fill',OUTLINE='outline',HIDE='hide';
         let cData,regions={},contours=[],sContours=[];
         let cur=0,el,stk;
-        let tMode={TV:FILL,OAR:OUTLINE,ANT:FILL,OTHER:FILL};
+        let tMode={GTV:FILL,CTV:FILL,PTV:FILL,TV:FILL,OAR:OUTLINE,ANT:FILL,OTHER:FILL};
         let rMode={};
-        let settings={lineWidth:1.5,fillOpacity:0.2,defaultTV:'fill',defaultOAR:'outline',defaultANT:'fill',scrollThreshold:25};
+        let settings={lineWidth:1.5,fillOpacity:0.2,defaultGTV:'fill',defaultCTV:'fill',defaultPTV:'fill',defaultTV:'fill',defaultOAR:'outline',defaultANT:'fill',scrollThreshold:25};
 
         function rgb(h){
             if(!h)return'255,0,0';if(h.includes(','))return h;
@@ -346,20 +346,32 @@
             cornerstone.loadAndCacheImage(stk.imageIds[i]).then(img=>{cornerstone.displayImage(el,img);cornerstone.updateImage(el);});
         }
 
-        function getRType(n){return(regions[n]||{}).type||'OTHER';}
+        function getRType(n){
+            const r=regions[n]||{};
+            if(r.type==='TV'){
+                const nm=(r.name||'').toUpperCase();
+                if(/\bGTV\b/.test(nm))return'GTV';
+                if(/\bCTV\b/.test(nm))return'CTV';
+                if(/\bPTV\b/.test(nm))return'PTV';
+                return'TV';
+            }
+            return r.type||'OTHER';
+        }
         function getRMode(n){return rMode[n]||tMode[getRType(n)]||FILL;}
 
         function buildLegend(){
-            const by={TV:[],OAR:[],ANT:[],OTHER:[]},seen={};
+            const by={GTV:[],CTV:[],PTV:[],TV:[],OAR:[],ANT:[],OTHER:[]},seen={};
             contours.forEach(c=>{
                 if(seen[c.ROINumber])return;seen[c.ROINumber]=true;
                 const r=regions[c.ROINumber]||{};
-                (by[r.type||'OTHER']||by.OTHER).push({id:c.ROINumber,name:r.name||('Region '+c.ROINumber),color:rgb(r.color||c.color),type:r.type||'OTHER'});
+                const t=getRType(c.ROINumber);
+                (by[t]||by.OTHER).push({id:c.ROINumber,name:r.name||('Region '+c.ROINumber),color:rgb(r.color||c.color),type:t});
             });
+            const sections=[['GTV','Gross Tumor Volume','tv'],['CTV','Clinical Target Volume','tv'],['PTV','Planning Target Volume','tv'],['TV','Other Targets','tv'],['OAR','Organs at Risk','oar'],['ANT','Anatomy','ant'],['OTHER','Other','']];
             let h='';
-            for(const[t,label]of[['TV','Target Volumes'],['OAR','Organs at Risk'],['ANT','Anatomy'],['OTHER','Other']]){
-                if(!by[t].length)continue;const m=tMode[t];
-                h+='<div class="sec-hdr '+t.toLowerCase()+'"><span>'+label+'</span><div class="sec-modes">'+
+            for(const[t,label,cls]of sections){
+                if(!by[t].length)continue;const m=tMode[t]||FILL;
+                h+='<div class="sec-hdr '+cls+'"><span>'+label+'</span><div class="sec-modes">'+
                     '<button class="mbtn '+(m===FILL?'on':'')+'" onclick="window._sTM(\''+t+'\',\'fill\')">Fill</button>'+
                     '<button class="mbtn '+(m===OUTLINE?'on':'')+'" onclick="window._sTM(\''+t+'\',\'outline\')">Line</button>'+
                     '<button class="mbtn '+(m===HIDE?'on':'')+'" onclick="window._sTM(\''+t+'\',\'hide\')">Hide</button>'+
@@ -433,6 +445,9 @@
 
             await ECDB.open();
             try{const s=await ECDB.getMeta('settings');if(s)settings={...settings,...s};}catch(e){}
+            tMode.GTV=settings.defaultGTV||'fill';
+            tMode.CTV=settings.defaultCTV||'fill';
+            tMode.PTV=settings.defaultPTV||'fill';
             tMode.TV=settings.defaultTV||'fill';
             tMode.OAR=settings.defaultOAR||'outline';
             tMode.ANT=settings.defaultANT||'fill';

@@ -194,8 +194,44 @@
             </div>
 
             <div class="setting-group">
-                <div class="setting-label">Default Target Volume Mode</div>
-                <div class="setting-desc">How target volumes (GTV/CTV/PTV) are displayed</div>
+                <div class="setting-label">Default GTV Mode</div>
+                <div class="setting-desc">Gross Tumor Volume</div>
+                <div class="setting-row">
+                    <select id="setGTV">
+                        <option value="fill">Fill + Outline</option>
+                        <option value="outline">Outline Only</option>
+                        <option value="hide">Hidden</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">Default CTV Mode</div>
+                <div class="setting-desc">Clinical Target Volume</div>
+                <div class="setting-row">
+                    <select id="setCTV">
+                        <option value="fill">Fill + Outline</option>
+                        <option value="outline">Outline Only</option>
+                        <option value="hide">Hidden</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">Default PTV Mode</div>
+                <div class="setting-desc">Planning Target Volume</div>
+                <div class="setting-row">
+                    <select id="setPTV">
+                        <option value="fill">Fill + Outline</option>
+                        <option value="outline">Outline Only</option>
+                        <option value="hide">Hidden</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">Default Other Target Mode</div>
+                <div class="setting-desc">Other target volumes (fiducials, nodal volumes, etc)</div>
                 <div class="setting-row">
                     <select id="setTV">
                         <option value="fill">Fill + Outline</option>
@@ -251,7 +287,8 @@
 
         const DEFAULT_SETTINGS={
             lineWidth:1.5, fillOpacity:0.2,
-            defaultTV:'fill', defaultOAR:'outline', defaultANT:'fill',
+            defaultGTV:'fill', defaultCTV:'fill', defaultPTV:'fill', defaultTV:'fill',
+            defaultOAR:'outline', defaultANT:'fill',
             scrollThreshold:25
         };
 
@@ -264,6 +301,9 @@
             document.getElementById('setLineVal').textContent=s.lineWidth+'px';
             document.getElementById('setFill').value=s.fillOpacity;
             document.getElementById('setFillVal').textContent=Math.round(s.fillOpacity*100)+'%';
+            document.getElementById('setGTV').value=s.defaultGTV||'fill';
+            document.getElementById('setCTV').value=s.defaultCTV||'fill';
+            document.getElementById('setPTV').value=s.defaultPTV||'fill';
             document.getElementById('setTV').value=s.defaultTV;
             document.getElementById('setOAR').value=s.defaultOAR;
             document.getElementById('setANT').value=s.defaultANT;
@@ -278,6 +318,9 @@
             const s={
                 lineWidth:parseFloat(document.getElementById('setLine').value),
                 fillOpacity:parseFloat(document.getElementById('setFill').value),
+                defaultGTV:document.getElementById('setGTV').value,
+                defaultCTV:document.getElementById('setCTV').value,
+                defaultPTV:document.getElementById('setPTV').value,
                 defaultTV:document.getElementById('setTV').value,
                 defaultOAR:document.getElementById('setOAR').value,
                 defaultANT:document.getElementById('setANT').value,
