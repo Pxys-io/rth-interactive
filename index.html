@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#0b1120">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="/db.js"></script>
     <style>
         :root {
@@ -61,7 +62,7 @@
         /* Toolbar */
         .toolbar { display: flex; gap: 8px; padding: 12px 0; align-items: center; flex-wrap: wrap; }
         .search-wrap { flex: 1; min-width: 200px; position: relative; }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text4); font-size: 14px; pointer-events: none; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text4); width: 16px; height: 16px; pointer-events: none; }
         .search { width: 100%; padding: 9px 12px 9px 34px; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; transition: border-color 0.15s; }
         .search:focus { outline: none; border-color: var(--accent); }
         .search::placeholder { color: var(--text4); }
@@ -141,6 +142,7 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <button class="hbtn" id="installBtn" style="display:none" onclick="doInstall()">Install</button>
                     <button class="hbtn" id="storageBtn" onclick="showStorageInfo()">Storage</button>
                     <button class="hbtn danger" onclick="showResetModal()">Reset</button>
                 </div>
@@ -351,6 +353,22 @@
         };
 
         if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt',e=>{
+            e.preventDefault();
+            deferredPrompt=e;
+            document.getElementById('installBtn').style.display='';
+        });
+        window.doInstall=async function(){
+            if(!deferredPrompt)return;
+            deferredPrompt.prompt();
+            const r=await deferredPrompt.userChoice;
+            if(r.outcome==='accepted'){document.getElementById('installBtn').textContent='Installed';document.getElementById('installBtn').disabled=true;}
+            deferredPrompt=null;
+        };
+        window.addEventListener('appinstalled',()=>{document.getElementById('installBtn').style.display='none';});
+
         init();
     })();
     </script>
