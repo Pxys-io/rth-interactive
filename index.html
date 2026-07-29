@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>eContour</title>
+    <title>RTH Interactive</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0b1120">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,69 +12,47 @@
     <script src="/db.js"></script>
     <style>
         :root {
-            --bg: #0b1120;
-            --surface: #111827;
-            --surface2: #1a2332;
-            --border: #1e2d3d;
-            --border2: #2a3a4d;
-            --text: #e2e8f0;
-            --text2: #94a3b8;
-            --text3: #64748b;
-            --text4: #475569;
-            --accent: #3b82f6;
-            --accent-dim: #1e3a5f;
-            --success: #059669;
-            --success-bg: #064e3b;
-            --danger: #dc2626;
-            --danger-bg: #7f1d1d;
+            --bg: #0b1120; --surface: #111827; --surface2: #1a2332;
+            --border: #1e2d3d; --border2: #2a3a4d;
+            --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b; --text4: #475569;
+            --accent: #3b82f6; --accent-dim: #1e3a5f;
+            --success: #059669; --success-bg: #064e3b;
+            --danger: #dc2626; --danger-bg: #7f1d1d;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
-
         .shell { max-width: 1400px; margin: 0 auto; padding: 0 16px; }
 
-        /* Header */
-        .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 0 16px; }
-        .header .shell { display: flex; flex-direction: column; gap: 14px; }
+        .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 0; }
+        .header .shell { display: flex; flex-direction: column; gap: 12px; }
         .header-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
         .brand { display: flex; align-items: center; gap: 10px; }
-        .brand-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #fff; }
+        .brand-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; }
         .brand h1 { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
-        .brand-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+        .brand-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
         .header-right { display: flex; gap: 8px; align-items: center; }
         .hbtn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 7px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 500; transition: all 0.15s; }
         .hbtn:hover { background: var(--border); color: var(--text); }
         .hbtn.danger { border-color: #991b1b; color: #fca5a5; }
         .hbtn.danger:hover { background: var(--danger-bg); }
-
-        /* Storage */
         .storage { display: flex; align-items: center; gap: 10px; }
-        .storage-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .storage-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
         .storage-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
         .storage-text { font-size: 11px; color: var(--text4); white-space: nowrap; }
 
-        /* Stats */
-        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 16px 0 12px; }
-        .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
-        .stat-num { font-size: 22px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
-        .stat-lbl { font-size: 10px; color: var(--text4); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* Toolbar */
-        .toolbar { display: flex; gap: 8px; padding: 12px 0; align-items: center; flex-wrap: wrap; }
-        .search-wrap { flex: 1; min-width: 200px; position: relative; }
+        .toolbar { display: flex; gap: 8px; padding: 14px 0; align-items: center; }
+        .search-wrap { flex: 1; position: relative; }
         .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text4); width: 16px; height: 16px; pointer-events: none; }
         .search { width: 100%; padding: 9px 12px 9px 34px; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; transition: border-color 0.15s; }
         .search:focus { outline: none; border-color: var(--accent); }
         .search::placeholder { color: var(--text4); }
 
-        /* Filter pills */
-        .pills { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 8px; }
+        .pills { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 10px; }
         .pill { padding: 5px 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text3); border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.15s; user-select: none; }
         .pill:hover { border-color: var(--border2); color: var(--text2); }
         .pill.on { background: var(--accent-dim); color: #93c5fd; border-color: var(--accent); }
         .pill.green.on { background: var(--success-bg); color: #6ee7b7; border-color: var(--success); }
 
-        /* Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; padding-bottom: 40px; }
         .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
         .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); opacity: 0; transition: opacity 0.15s; }
@@ -103,7 +81,6 @@
         .cbtn.del { border-color: #991b1b; color: #fca5a5; }
         .cbtn.del:hover { background: var(--danger-bg); }
 
-        /* Empty */
         .empty { text-align: center; padding: 80px 20px; }
         .empty svg { width: 48px; height: 48px; color: var(--text4); margin-bottom: 12px; }
         .empty p { color: var(--text4); font-size: 14px; }
@@ -111,23 +88,32 @@
         /* Modal */
         .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
         .modal-bg.open { display: flex; }
-        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; max-width: 400px; width: 100%; }
-        .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-        .modal p { color: var(--text2); font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
-        .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; max-width: 420px; width: 100%; max-height: 80dvh; overflow-y: auto; }
+        .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        .modal p { color: var(--text2); font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+        .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
         .mbtn { padding: 8px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); font-weight: 500; }
         .mbtn.confirm { background: var(--danger); border-color: var(--danger); color: #fff; }
+        .mbtn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        /* Settings */
+        .setting-group { margin-bottom: 16px; }
+        .setting-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+        .setting-desc { font-size: 11px; color: var(--text4); margin-bottom: 8px; }
+        .setting-row { display: flex; align-items: center; gap: 10px; }
+        .setting-row input[type="range"] { flex: 1; height: 24px; -webkit-appearance: none; background: transparent; }
+        .setting-row input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: var(--border); border-radius: 2px; }
+        .setting-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border-radius: 50%; margin-top: -7px; border: 2px solid var(--surface); }
+        .setting-val { font-size: 12px; color: var(--text3); min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
+        .setting-row select { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 6px 10px; border-radius: 6px; font-size: 12px; flex: 1; }
 
         @media (max-width: 640px) {
-            .stats { grid-template-columns: repeat(2, 1fr); }
             .grid { grid-template-columns: 1fr; }
             .header-row { flex-direction: column; align-items: flex-start; }
             .header-right { width: 100%; }
             .hbtn { flex: 1; text-align: center; }
         }
-        @media (min-width: 641px) and (max-width: 900px) {
-            .grid { grid-template-columns: repeat(2, 1fr); }
-        }
+        @media (min-width: 641px) and (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
 <body>
@@ -135,15 +121,16 @@
         <div class="shell">
             <div class="header-row">
                 <div class="brand">
-                    <div class="brand-icon">eC</div>
+                    <div class="brand-icon">RT</div>
                     <div>
-                        <h1>eContour</h1>
-                        <div class="brand-sub">Radiation Oncology Atlas</div>
+                        <h1>RTH Interactive</h1>
+                        <div class="brand-sub">Radiation Therapy Contouring Atlas</div>
                     </div>
                 </div>
                 <div class="header-right">
                     <button class="hbtn" id="installBtn" style="display:none" onclick="doInstall()">Install</button>
-                    <button class="hbtn" id="storageBtn" onclick="showStorageInfo()">Storage</button>
+                    <button class="hbtn" onclick="openSettings()">Settings</button>
+                    <button class="hbtn" onclick="showStorageInfo()">Storage</button>
                     <button class="hbtn danger" onclick="showResetModal()">Reset</button>
                 </div>
             </div>
@@ -155,13 +142,6 @@
     </div>
 
     <div class="shell">
-        <div class="stats">
-            <div class="stat"><div class="stat-num" id="sTotal">--</div><div class="stat-lbl">Cases</div></div>
-            <div class="stat"><div class="stat-num" id="sSaved">--</div><div class="stat-lbl">Saved</div></div>
-            <div class="stat"><div class="stat-num">132</div><div class="stat-lbl">Patients</div></div>
-            <div class="stat"><div class="stat-num">61k</div><div class="stat-lbl">Images</div></div>
-        </div>
-
         <div class="toolbar">
             <div class="search-wrap">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -174,19 +154,93 @@
             <button class="pill green" data-f="saved">Saved</button>
             <button class="pill" data-f="unsaved">Unsaved</button>
         </div>
-
         <div class="pills" id="sitePills"></div>
-
         <div class="grid" id="grid"></div>
     </div>
 
+    <!-- Reset Modal -->
     <div class="modal-bg" id="resetModal">
         <div class="modal">
             <h3>Reset Database</h3>
-            <p>Delete all saved cases from local storage. You can re-download them anytime. This cannot be undone.</p>
+            <p>Delete all saved cases from local storage. You can re-download them anytime.</p>
             <div class="modal-btns">
                 <button class="mbtn" onclick="closeResetModal()">Cancel</button>
                 <button class="mbtn confirm" onclick="confirmReset()">Delete All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-bg" id="settingsModal">
+        <div class="modal">
+            <h3>Contour Settings</h3>
+
+            <div class="setting-group">
+                <div class="setting-label">Line Thickness</div>
+                <div class="setting-desc">Contour outline width in pixels</div>
+                <div class="setting-row">
+                    <input type="range" id="setLine" min="0.5" max="5" step="0.5" value="1.5">
+                    <span class="setting-val" id="setLineVal">1.5px</span>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">Fill Opacity</div>
+                <div class="setting-desc">Transparency of filled contours</div>
+                <div class="setting-row">
+                    <input type="range" id="setFill" min="0" max="0.6" step="0.05" value="0.2">
+                    <span class="setting-val" id="setFillVal">20%</span>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">Default Target Volume Mode</div>
+                <div class="setting-desc">How target volumes (GTV/CTV/PTV) are displayed</div>
+                <div class="setting-row">
+                    <select id="setTV">
+                        <option value="fill">Fill + Outline</option>
+                        <option value="outline">Outline Only</option>
+                        <option value="hide">Hidden</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">Default OAR Mode</div>
+                <div class="setting-desc">How organs at risk are displayed</div>
+                <div class="setting-row">
+                    <select id="setOAR">
+                        <option value="fill">Fill + Outline</option>
+                        <option value="outline" selected>Outline Only</option>
+                        <option value="hide">Hidden</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">Default Anatomy Mode</div>
+                <div class="setting-desc">How anatomy structures are displayed</div>
+                <div class="setting-row">
+                    <select id="setANT">
+                        <option value="fill">Fill + Outline</option>
+                        <option value="outline">Outline Only</option>
+                        <option value="hide">Hidden</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">Scroll Sensitivity</div>
+                <div class="setting-desc">Pixels of 2-finger drag per slice step</div>
+                <div class="setting-row">
+                    <input type="range" id="setScroll" min="10" max="60" step="5" value="25">
+                    <span class="setting-val" id="setScrollVal">25px</span>
+                </div>
+            </div>
+
+            <div class="modal-btns">
+                <button class="mbtn" onclick="closeSettings()">Cancel</button>
+                <button class="mbtn primary" onclick="saveSettings()">Save</button>
             </div>
         </div>
     </div>
@@ -195,17 +249,55 @@
     (function(){
         let allCases=[], savedIds=new Set(), siteFilter='all', offlineFilter='all';
 
+        const DEFAULT_SETTINGS={
+            lineWidth:1.5, fillOpacity:0.2,
+            defaultTV:'fill', defaultOAR:'outline', defaultANT:'fill',
+            scrollThreshold:25
+        };
+
+        async function loadSettings(){
+            try{const s=await ECDB.getMeta('settings');return s?{...DEFAULT_SETTINGS,...s}:{...DEFAULT_SETTINGS};}catch(e){return{...DEFAULT_SETTINGS};}
+        }
+
+        function openSettings(){loadSettings().then(s=>{
+            document.getElementById('setLine').value=s.lineWidth;
+            document.getElementById('setLineVal').textContent=s.lineWidth+'px';
+            document.getElementById('setFill').value=s.fillOpacity;
+            document.getElementById('setFillVal').textContent=Math.round(s.fillOpacity*100)+'%';
+            document.getElementById('setTV').value=s.defaultTV;
+            document.getElementById('setOAR').value=s.defaultOAR;
+            document.getElementById('setANT').value=s.defaultANT;
+            document.getElementById('setScroll').value=s.scrollThreshold;
+            document.getElementById('setScrollVal').textContent=s.scrollThreshold+'px';
+            document.getElementById('settingsModal').classList.add('open');
+        });}
+        window.openSettings=openSettings;
+        window.closeSettings=()=>document.getElementById('settingsModal').classList.remove('open');
+
+        window.saveSettings=async function(){
+            const s={
+                lineWidth:parseFloat(document.getElementById('setLine').value),
+                fillOpacity:parseFloat(document.getElementById('setFill').value),
+                defaultTV:document.getElementById('setTV').value,
+                defaultOAR:document.getElementById('setOAR').value,
+                defaultANT:document.getElementById('setANT').value,
+                scrollThreshold:parseInt(document.getElementById('setScroll').value)
+            };
+            await ECDB.setMeta('settings',s);
+            closeSettings();
+        };
+
+        document.getElementById('setLine').oninput=e=>document.getElementById('setLineVal').textContent=e.target.value+'px';
+        document.getElementById('setFill').oninput=e=>document.getElementById('setFillVal').textContent=Math.round(e.target.value*100)+'%';
+        document.getElementById('setScroll').oninput=e=>document.getElementById('setScrollVal').textContent=e.target.value+'px';
+
         async function init(){
             const r=await fetch('/all_cases.json');
             allCases=await r.json();
-            document.getElementById('sTotal').textContent=allCases.length;
             await ECDB.open();
             const stored=await ECDB.getAllCases();
             stored.forEach(c=>{if(c.complete)savedIds.add(String(c.id))});
-            document.getElementById('sSaved').textContent=savedIds.size;
-            updateStorage();
-            renderSitePills();
-            render();
+            updateStorage();renderSitePills();render();
         }
 
         async function updateStorage(){
@@ -214,9 +306,7 @@
                 const pct=u.quota>0?Math.min(100,u.used/u.quota*100):0;
                 document.getElementById('storageFill').style.width=pct.toFixed(1)+'%';
                 document.getElementById('storageText').textContent=ECDB.formatBytes(u.used)+' / '+ECDB.formatBytes(u.quota);
-            }catch(e){
-                document.getElementById('storageText').textContent=savedIds.size+' saved';
-            }
+            }catch(e){document.getElementById('storageText').textContent=savedIds.size+' saved';}
         }
 
         function renderSitePills(){
@@ -224,18 +314,9 @@
             allCases.forEach(c=>{const s=c.site||'OTHER';sites[s]=(sites[s]||0)+1});
             const el=document.getElementById('sitePills');
             let h='<button class="pill on" data-s="all">All Sites</button>';
-            Object.entries(sites).sort((a,b)=>b[1]-a[1]).forEach(([s,n])=>{
-                h+='<button class="pill" data-s="'+s+'">'+s+' <span style="opacity:0.5">'+n+'</span></button>';
-            });
+            Object.entries(sites).sort((a,b)=>b[1]-a[1]).forEach(([s,n])=>{h+='<button class="pill" data-s="'+s+'">'+s+' <span style="opacity:0.5">'+n+'</span></button>';});
             el.innerHTML=h;
-            el.querySelectorAll('.pill').forEach(p=>{
-                p.onclick=()=>{
-                    el.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));
-                    p.classList.add('on');
-                    siteFilter=p.dataset.s;
-                    render();
-                };
-            });
+            el.querySelectorAll('.pill').forEach(p=>{p.onclick=()=>{el.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');siteFilter=p.dataset.s;render();};});
         }
 
         function siteCls(s){return 's-'+(s||'').toLowerCase().replace(/[^a-z]/g,'').substring(0,4)}
@@ -249,13 +330,8 @@
                 if(q){return(c.site+' '+c.subsite+' '+c.subsubsite+' '+c.stage+' '+c.assessment).toLowerCase().includes(q)}
                 return true;
             });
-
             const grid=document.getElementById('grid');
-            if(!list.length){
-                grid.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No cases found</p></div>';
-                return;
-            }
-
+            if(!list.length){grid.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No cases found</p></div>';return;}
             grid.innerHTML=list.map(c=>{
                 const isS=savedIds.has(String(c.id));
                 let badges='';
@@ -263,110 +339,46 @@
                 if(c.isARRO)badges+='<span class="nt t-arro">ARRO</span>';
                 if(c.isACRO)badges+='<span class="nt t-acro">ACRO</span>';
                 const dot=isS?'<div class="saved-dot"></div>':'';
-                const saveBtn=isS
-                    ?'<button class="cbtn saved">Saved</button>'
-                    :'<button class="cbtn save" onclick="event.stopPropagation();dlCase('+c.id+',this)">Save</button>';
+                const saveBtn=isS?'<button class="cbtn saved">Saved</button>':'<button class="cbtn save" onclick="event.stopPropagation();dlCase('+c.id+',this)">Save</button>';
                 const delBtn=isS?'<button class="cbtn del" onclick="event.stopPropagation();delCase('+c.id+')">Delete</button>':'';
-
                 return'<div class="card" onclick="location.href=\'/case.html?id='+c.id+'\'">'+
                     '<div class="card-row"><span class="site-tag '+siteCls(c.site)+'">'+(c.site||'?')+'</span>'+dot+'</div>'+
                     '<div class="card-name">'+(c.subsite||'')+'</div>'+
                     '<div class="card-detail">'+(c.subsubsite||'')+'</div>'+
                     '<div class="card-stage">'+(c.stage||'')+'</div>'+
                     (badges?'<div class="card-tags">'+badges+'</div>':'')+
-                    '<div class="card-actions">'+saveBtn+delBtn+'</div>'+
-                    '</div>';
+                    '<div class="card-actions">'+saveBtn+delBtn+'</div>'+'</div>';
             }).join('');
         }
 
-        // Pills
-        document.getElementById('pills').querySelectorAll('.pill').forEach(p=>{
-            p.onclick=()=>{
-                document.getElementById('pills').querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));
-                p.classList.add('on');
-                offlineFilter=p.dataset.f;
-                render();
-            };
-        });
-
+        document.getElementById('pills').querySelectorAll('.pill').forEach(p=>{p.onclick=()=>{document.getElementById('pills').querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');offlineFilter=p.dataset.f;render();};});
         document.getElementById('searchInput').addEventListener('input',render);
 
         window.dlCase=async function(id,btn){
             if(btn.classList.contains('saved'))return;
-            btn.classList.add('saved');
-            btn.textContent='0%';
+            btn.classList.add('saved');btn.textContent='0%';
             try{
-                const c=allCases.find(x=>x.id===id);
-                if(!c)throw new Error('not found');
+                const c=allCases.find(x=>x.id===id);if(!c)throw new Error('not found');
                 await ECDB.saveCaseMeta({id,name:c.name,site:c.site,subsite:c.subsite,subsubsite:c.subsubsite,stage:c.stage,assessment:c.assessment,numSlices:c.numSlices,downloadedAt:Date.now()});
                 const total=c.numSlices;
-                for(let i=1;i<=total;i++){
-                    const p=c.name+'/CT/CT.'+i+'.jpg';
-                    const r=await fetch('/'+p);
-                    const b=await r.blob();
-                    await ECDB.saveImage(id,p,b);
-                    btn.textContent=Math.round(i/total*100)+'%';
-                }
+                for(let i=1;i<=total;i++){const p=c.name+'/CT/CT.'+i+'.jpg';const r=await fetch('/'+p);const b=await r.blob();await ECDB.saveImage(id,p,b);btn.textContent=Math.round(i/total*100)+'%';}
                 try{const cp=c.name+'/contours.json';const cr=await fetch('/'+cp);const cb=await cr.blob();await ECDB.saveImage(id,cp,cb)}catch(e){}
-                for(const ov of['CTART','DOSE','PT']){
-                    try{
-                        const tr=await fetch('/'+c.name+'/'+ov+'/CT.1.jpg',{method:'HEAD'});
-                        if(tr.ok)for(let i=1;i<=total;i++){
-                            const op=c.name+'/'+ov+'/CT.'+i+'.jpg';
-                            const or2=await fetch('/'+op);
-                            const ob=await or2.blob();
-                            await ECDB.saveImage(id,op,ob);
-                        }
-                    }catch(e){}
-                }
+                for(const ov of['CTART','DOSE','PT']){try{const tr=await fetch('/'+c.name+'/'+ov+'/CT.1.jpg',{method:'HEAD'});if(tr.ok)for(let i=1;i<=total;i++){const op=c.name+'/'+ov+'/CT.'+i+'.jpg';const or2=await fetch('/'+op);const ob=await or2.blob();await ECDB.saveImage(id,op,ob);}}catch(e){}}
                 await ECDB.saveCaseMeta({id,name:c.name,site:c.site,subsite:c.subsite,subsubsite:c.subsubsite,stage:c.stage,assessment:c.assessment,numSlices:c.numSlices,downloadedAt:Date.now(),complete:true});
-                savedIds.add(String(id));
-                document.getElementById('sSaved').textContent=savedIds.size;
-                updateStorage();
-                render();
-            }catch(e){
-                console.error(e);btn.textContent='Err';btn.classList.remove('saved');
-                setTimeout(()=>{btn.textContent='Save';render()},2000);
-            }
+                savedIds.add(String(id));updateStorage();render();
+            }catch(e){console.error(e);btn.textContent='Err';btn.classList.remove('saved');setTimeout(()=>{btn.textContent='Save';render()},2000);}
         };
 
-        window.delCase=async function(id){
-            if(!confirm('Delete this case from local storage?'))return;
-            await ECDB.deleteCase(id);
-            savedIds.delete(String(id));
-            document.getElementById('sSaved').textContent=savedIds.size;
-            updateStorage();
-            render();
-        };
-
-        window.showStorageInfo=async function(){
-            const u=await ECDB.getStorageUsage();
-            alert('Used: '+ECDB.formatBytes(u.used)+'\nQuota: '+ECDB.formatBytes(u.quota)+'\nSaved: '+savedIds.size+' cases');
-        };
+        window.delCase=async function(id){if(!confirm('Delete this case?'))return;await ECDB.deleteCase(id);savedIds.delete(String(id));updateStorage();render();};
+        window.showStorageInfo=async function(){const u=await ECDB.getStorageUsage();alert('Used: '+ECDB.formatBytes(u.used)+'\nQuota: '+ECDB.formatBytes(u.quota)+'\nSaved: '+savedIds.size+' cases');};
         window.showResetModal=()=>document.getElementById('resetModal').classList.add('open');
         window.closeResetModal=()=>document.getElementById('resetModal').classList.remove('open');
-        window.confirmReset=async()=>{
-            await ECDB.resetDB();
-            savedIds.clear();
-            document.getElementById('sSaved').textContent='0';
-            closeResetModal();updateStorage();render();
-        };
+        window.confirmReset=async()=>{await ECDB.resetDB();savedIds.clear();closeResetModal();updateStorage();render();};
 
         if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
-
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt',e=>{
-            e.preventDefault();
-            deferredPrompt=e;
-            document.getElementById('installBtn').style.display='';
-        });
-        window.doInstall=async function(){
-            if(!deferredPrompt)return;
-            deferredPrompt.prompt();
-            const r=await deferredPrompt.userChoice;
-            if(r.outcome==='accepted'){document.getElementById('installBtn').textContent='Installed';document.getElementById('installBtn').disabled=true;}
-            deferredPrompt=null;
-        };
+        window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').style.display='';});
+        window.doInstall=async function(){if(!deferredPrompt)return;deferredPrompt.prompt();const r=await deferredPrompt.userChoice;if(r.outcome==='accepted'){document.getElementById('installBtn').textContent='Installed';document.getElementById('installBtn').disabled=true;}deferredPrompt=null;};
         window.addEventListener('appinstalled',()=>{document.getElementById('installBtn').style.display='none';});
 
         init();

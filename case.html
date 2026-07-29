@@ -212,6 +212,7 @@
         let cur=0,el,stk;
         let tMode={TV:FILL,OAR:OUTLINE,ANT:FILL,OTHER:FILL};
         let rMode={};
+        let settings={lineWidth:1.5,fillOpacity:0.2,defaultTV:'fill',defaultOAR:'outline',defaultANT:'fill',scrollThreshold:25};
 
         function rgb(h){
             if(!h)return'255,0,0';if(h.includes(','))return h;
@@ -288,7 +289,7 @@
                 recognizers:[[Hammer.Pan,{direction:Hammer.DIRECTION_ALL,threshold:8}],[Hammer.Pinch,{enable:true}]]
             });
             mc.get('pan').requireFailure(mc.get('pinch'));
-            let lx=0,ly=0,lp=1,acc=0;const TH=25;
+            let lx=0,ly=0,lp=1,acc=0;const TH=settings.scrollThreshold;
 
             mc.on('panstart',e=>{lx=e.center.x;ly=e.center.y;acc=0;});
             mc.on('panmove',e=>{
@@ -316,12 +317,12 @@
                     const mode=rMode[c.ROINumber]||tMode[(regions[c.ROINumber]||{}).type||'OTHER']||FILL;
                     if(mode===HIDE)continue;
                     const col=rgb((regions[c.ROINumber]||{}).color||c.color||'255,0,0');
-                    ctx.lineWidth=1.5;ctx.lineCap=ctx.lineJoin='round';
+                    ctx.lineWidth=settings.lineWidth;ctx.lineCap=ctx.lineJoin='round';
                     ctx.strokeStyle='rgb('+col+')';ctx.beginPath();
                     ctx.moveTo(c.points[0].x,c.points[0].y);
                     for(let j=1;j<c.points.length;j++)ctx.lineTo(c.points[j].x,c.points[j].y);
                     ctx.closePath();ctx.stroke();
-                    if(mode===FILL){ctx.fillStyle='rgba('+col+',0.2)';ctx.fill();}
+                    if(mode===FILL){ctx.fillStyle='rgba('+col+','+settings.fillOpacity+')';ctx.fill();}
                 }
             });
         }
@@ -429,6 +430,13 @@
         async function init(){
             const p=new URLSearchParams(location.search),cid=p.get('id');
             if(!cid){location.href='/';return;}
+
+            await ECDB.open();
+            try{const s=await ECDB.getMeta('settings');if(s)settings={...settings,...s};}catch(e){}
+            tMode.TV=settings.defaultTV||'fill';
+            tMode.OAR=settings.defaultOAR||'outline';
+            tMode.ANT=settings.defaultANT||'fill';
+
             const[cr,rr]=await Promise.all([fetch('/cases/'+cid+'/full_data.json'),fetch('/cases/'+cid+'/regions.json').catch(()=>null)]);
             cData=await cr.json();if(rr?.ok)regions=await rr.json();
 
@@ -436,7 +444,7 @@
             const sub=cData.site+' - '+(cData.stage||'');
             document.getElementById('mTitle').textContent=title;document.getElementById('mSub').textContent=sub;
             document.getElementById('dTitle').textContent=title;document.getElementById('dSub').textContent=sub;
-            document.title='Case '+cData.id+': '+cData.subsite;
+            document.title='RTH Interactive - Case '+cData.id;
 
             const info='<div class="info-row"><div class="info-lbl">Assessment</div><div class="info-val">'+(cData.assessment||'')+'</div></div>'+
                 '<div class="info-row"><div class="info-lbl">Treatment Summary</div><div class="info-html">'+(cData.rtsummary||'')+'</div></div>'+
