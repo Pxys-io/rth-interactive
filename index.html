@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>eContour</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0b1120">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="/db.js"></script>
+    <style>
+        :root {
+            --bg: #0b1120;
+            --surface: #111827;
+            --surface2: #1a2332;
+            --border: #1e2d3d;
+            --border2: #2a3a4d;
+            --text: #e2e8f0;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --text4: #475569;
+            --accent: #3b82f6;
+            --accent-dim: #1e3a5f;
+            --success: #059669;
+            --success-bg: #064e3b;
+            --danger: #dc2626;
+            --danger-bg: #7f1d1d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+
+        .shell { max-width: 1400px; margin: 0 auto; padding: 0 16px; }
+
+        /* Header */
+        .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 0 16px; }
+        .header .shell { display: flex; flex-direction: column; gap: 14px; }
+        .header-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #fff; }
+        .brand h1 { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+        .brand-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+        .header-right { display: flex; gap: 8px; align-items: center; }
+        .hbtn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 7px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 500; transition: all 0.15s; }
+        .hbtn:hover { background: var(--border); color: var(--text); }
+        .hbtn.danger { border-color: #991b1b; color: #fca5a5; }
+        .hbtn.danger:hover { background: var(--danger-bg); }
+
+        /* Storage */
+        .storage { display: flex; align-items: center; gap: 10px; }
+        .storage-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .storage-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+        .storage-text { font-size: 11px; color: var(--text4); white-space: nowrap; }
+
+        /* Stats */
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 16px 0 12px; }
+        .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+        .stat-num { font-size: 22px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+        .stat-lbl { font-size: 10px; color: var(--text4); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Toolbar */
+        .toolbar { display: flex; gap: 8px; padding: 12px 0; align-items: center; flex-wrap: wrap; }
+        .search-wrap { flex: 1; min-width: 200px; position: relative; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text4); font-size: 14px; pointer-events: none; }
+        .search { width: 100%; padding: 9px 12px 9px 34px; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; transition: border-color 0.15s; }
+        .search:focus { outline: none; border-color: var(--accent); }
+        .search::placeholder { color: var(--text4); }
+
+        /* Filter pills */
+        .pills { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 8px; }
+        .pill { padding: 5px 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text3); border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.15s; user-select: none; }
+        .pill:hover { border-color: var(--border2); color: var(--text2); }
+        .pill.on { background: var(--accent-dim); color: #93c5fd; border-color: var(--accent); }
+        .pill.green.on { background: var(--success-bg); color: #6ee7b7; border-color: var(--success); }
+
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; padding-bottom: 40px; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); opacity: 0; transition: opacity 0.15s; }
+        .card:hover { border-color: var(--border2); transform: translateY(-1px); }
+        .card:hover::before { opacity: 1; }
+        .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .site-tag { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .s-gi { background: #064e3b; color: #6ee7b7; } .s-gu { background: #2e1065; color: #c4b5fd; }
+        .s-gyn { background: #500724; color: #f9a8d4; } .s-hn { background: #451a03; color: #fde68a; }
+        .s-cns { background: #172554; color: #93c5fd; } .s-lu { background: #083344; color: #67e8f9; }
+        .s-br { background: #500724; color: #fbcfe8; } .s-lymph { background: #1e1b4b; color: #a5b4fc; }
+        .s-sarc { background: #3d1c02; color: #fbbf24; } .s-mets { background: #1a1a2e; color: #9ca3af; }
+        .saved-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; margin-top: 4px; }
+        .card-name { font-size: 15px; font-weight: 600; color: #fff; margin: 8px 0 2px; line-height: 1.3; }
+        .card-detail { font-size: 12px; color: var(--text3); }
+        .card-stage { font-size: 11px; color: var(--text4); margin-top: 4px; }
+        .card-tags { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+        .nt { padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; }
+        .t-nrg { background: #451a03; color: #fde68a; } .t-arro { background: #500724; color: #fbcfe8; } .t-acro { background: #064e3b; color: #6ee7b7; }
+        .card-actions { display: flex; gap: 6px; margin-top: 10px; }
+        .cbtn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 6px 0; border-radius: 6px; font-size: 11px; cursor: pointer; flex: 1; text-align: center; font-weight: 500; transition: all 0.15s; }
+        .cbtn:hover { background: var(--border); }
+        .cbtn.save { border-color: var(--accent); color: #93c5fd; }
+        .cbtn.save:hover { background: var(--accent-dim); }
+        .cbtn.saved { background: var(--success-bg); border-color: var(--success); color: #6ee7b7; cursor: default; }
+        .cbtn.del { border-color: #991b1b; color: #fca5a5; }
+        .cbtn.del:hover { background: var(--danger-bg); }
+
+        /* Empty */
+        .empty { text-align: center; padding: 80px 20px; }
+        .empty svg { width: 48px; height: 48px; color: var(--text4); margin-bottom: 12px; }
+        .empty p { color: var(--text4); font-size: 14px; }
+
+        /* Modal */
+        .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal-bg.open { display: flex; }
+        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; max-width: 400px; width: 100%; }
+        .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .modal p { color: var(--text2); font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
+        .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+        .mbtn { padding: 8px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); font-weight: 500; }
+        .mbtn.confirm { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+        @media (max-width: 640px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .grid { grid-template-columns: 1fr; }
+            .header-row { flex-direction: column; align-items: flex-start; }
+            .header-right { width: 100%; }
+            .hbtn { flex: 1; text-align: center; }
+        }
+        @media (min-width: 641px) and (max-width: 900px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="shell">
+            <div class="header-row">
+                <div class="brand">
+                    <div class="brand-icon">eC</div>
+                    <div>
+                        <h1>eContour</h1>
+                        <div class="brand-sub">Radiation Oncology Atlas</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="hbtn" id="storageBtn" onclick="showStorageInfo()">Storage</button>
+                    <button class="hbtn danger" onclick="showResetModal()">Reset</button>
+                </div>
+            </div>
+            <div class="storage">
+                <div class="storage-track"><div class="storage-fill" id="storageFill" style="width:0%"></div></div>
+                <div class="storage-text" id="storageText">--</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shell">
+        <div class="stats">
+            <div class="stat"><div class="stat-num" id="sTotal">--</div><div class="stat-lbl">Cases</div></div>
+            <div class="stat"><div class="stat-num" id="sSaved">--</div><div class="stat-lbl">Saved</div></div>
+            <div class="stat"><div class="stat-num">132</div><div class="stat-lbl">Patients</div></div>
+            <div class="stat"><div class="stat-num">61k</div><div class="stat-lbl">Images</div></div>
+        </div>
+
+        <div class="toolbar">
+            <div class="search-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="search" id="searchInput" placeholder="Search cases...">
+            </div>
+        </div>
+
+        <div class="pills" id="pills">
+            <button class="pill on" data-f="all">All</button>
+            <button class="pill green" data-f="saved">Saved</button>
+            <button class="pill" data-f="unsaved">Unsaved</button>
+        </div>
+
+        <div class="pills" id="sitePills"></div>
+
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="modal-bg" id="resetModal">
+        <div class="modal">
+            <h3>Reset Database</h3>
+            <p>Delete all saved cases from local storage. You can re-download them anytime. This cannot be undone.</p>
+            <div class="modal-btns">
+                <button class="mbtn" onclick="closeResetModal()">Cancel</button>
+                <button class="mbtn confirm" onclick="confirmReset()">Delete All</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function(){
+        let allCases=[], savedIds=new Set(), siteFilter='all', offlineFilter='all';
+
+        async function init(){
+            const r=await fetch('/all_cases.json');
+            allCases=await r.json();
+            document.getElementById('sTotal').textContent=allCases.length;
+            await ECDB.open();
+            const stored=await ECDB.getAllCases();
+            stored.forEach(c=>{if(c.complete)savedIds.add(String(c.id))});
+            document.getElementById('sSaved').textContent=savedIds.size;
+            updateStorage();
+            renderSitePills();
+            render();
+        }
+
+        async function updateStorage(){
+            try{
+                const u=await ECDB.getStorageUsage();
+                const pct=u.quota>0?Math.min(100,u.used/u.quota*100):0;
+                document.getElementById('storageFill').style.width=pct.toFixed(1)+'%';
+                document.getElementById('storageText').textContent=ECDB.formatBytes(u.used)+' / '+ECDB.formatBytes(u.quota);
+            }catch(e){
+                document.getElementById('storageText').textContent=savedIds.size+' saved';
+            }
+        }
+
+        function renderSitePills(){
+            const sites={};
+            allCases.forEach(c=>{const s=c.site||'OTHER';sites[s]=(sites[s]||0)+1});
+            const el=document.getElementById('sitePills');
+            let h='<button class="pill on" data-s="all">All Sites</button>';
+            Object.entries(sites).sort((a,b)=>b[1]-a[1]).forEach(([s,n])=>{
+                h+='<button class="pill" data-s="'+s+'">'+s+' <span style="opacity:0.5">'+n+'</span></button>';
+            });
+            el.innerHTML=h;
+            el.querySelectorAll('.pill').forEach(p=>{
+                p.onclick=()=>{
+                    el.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));
+                    p.classList.add('on');
+                    siteFilter=p.dataset.s;
+                    render();
+                };
+            });
+        }
+
+        function siteCls(s){return 's-'+(s||'').toLowerCase().replace(/[^a-z]/g,'').substring(0,4)}
+
+        function render(){
+            const q=document.getElementById('searchInput').value.toLowerCase();
+            let list=allCases.filter(c=>{
+                if(siteFilter!=='all'&&c.site!==siteFilter)return false;
+                if(offlineFilter==='saved'&&!savedIds.has(String(c.id)))return false;
+                if(offlineFilter==='unsaved'&&savedIds.has(String(c.id)))return false;
+                if(q){return(c.site+' '+c.subsite+' '+c.subsubsite+' '+c.stage+' '+c.assessment).toLowerCase().includes(q)}
+                return true;
+            });
+
+            const grid=document.getElementById('grid');
+            if(!list.length){
+                grid.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No cases found</p></div>';
+                return;
+            }
+
+            grid.innerHTML=list.map(c=>{
+                const isS=savedIds.has(String(c.id));
+                let badges='';
+                if(c.isNRG)badges+='<span class="nt t-nrg">NRG</span>';
+                if(c.isARRO)badges+='<span class="nt t-arro">ARRO</span>';
+                if(c.isACRO)badges+='<span class="nt t-acro">ACRO</span>';
+                const dot=isS?'<div class="saved-dot"></div>':'';
+                const saveBtn=isS
+                    ?'<button class="cbtn saved">Saved</button>'
+                    :'<button class="cbtn save" onclick="event.stopPropagation();dlCase('+c.id+',this)">Save</button>';
+                const delBtn=isS?'<button class="cbtn del" onclick="event.stopPropagation();delCase('+c.id+')">Delete</button>':'';
+
+                return'<div class="card" onclick="location.href=\'/case.html?id='+c.id+'\'">'+
+                    '<div class="card-row"><span class="site-tag '+siteCls(c.site)+'">'+(c.site||'?')+'</span>'+dot+'</div>'+
+                    '<div class="card-name">'+(c.subsite||'')+'</div>'+
+                    '<div class="card-detail">'+(c.subsubsite||'')+'</div>'+
+                    '<div class="card-stage">'+(c.stage||'')+'</div>'+
+                    (badges?'<div class="card-tags">'+badges+'</div>':'')+
+                    '<div class="card-actions">'+saveBtn+delBtn+'</div>'+
+                    '</div>';
+            }).join('');
+        }
+
+        // Pills
+        document.getElementById('pills').querySelectorAll('.pill').forEach(p=>{
+            p.onclick=()=>{
+                document.getElementById('pills').querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));
+                p.classList.add('on');
+                offlineFilter=p.dataset.f;
+                render();
+            };
+        });
+
+        document.getElementById('searchInput').addEventListener('input',render);
+
+        window.dlCase=async function(id,btn){
+            if(btn.classList.contains('saved'))return;
+            btn.classList.add('saved');
+            btn.textContent='0%';
+            try{
+                const c=allCases.find(x=>x.id===id);
+                if(!c)throw new Error('not found');
+                await ECDB.saveCaseMeta({id,name:c.name,site:c.site,subsite:c.subsite,subsubsite:c.subsubsite,stage:c.stage,assessment:c.assessment,numSlices:c.numSlices,downloadedAt:Date.now()});
+                const total=c.numSlices;
+                for(let i=1;i<=total;i++){
+                    const p=c.name+'/CT/CT.'+i+'.jpg';
+                    const r=await fetch('/'+p);
+                    const b=await r.blob();
+                    await ECDB.saveImage(id,p,b);
+                    btn.textContent=Math.round(i/total*100)+'%';
+                }
+                try{const cp=c.name+'/contours.json';const cr=await fetch('/'+cp);const cb=await cr.blob();await ECDB.saveImage(id,cp,cb)}catch(e){}
+                for(const ov of['CTART','DOSE','PT']){
+                    try{
+                        const tr=await fetch('/'+c.name+'/'+ov+'/CT.1.jpg',{method:'HEAD'});
+                        if(tr.ok)for(let i=1;i<=total;i++){
+                            const op=c.name+'/'+ov+'/CT.'+i+'.jpg';
+                            const or2=await fetch('/'+op);
+                            const ob=await or2.blob();
+                            await ECDB.saveImage(id,op,ob);
+                        }
+                    }catch(e){}
+                }
+                await ECDB.saveCaseMeta({id,name:c.name,site:c.site,subsite:c.subsite,subsubsite:c.subsubsite,stage:c.stage,assessment:c.assessment,numSlices:c.numSlices,downloadedAt:Date.now(),complete:true});
+                savedIds.add(String(id));
+                document.getElementById('sSaved').textContent=savedIds.size;
+                updateStorage();
+                render();
+            }catch(e){
+                console.error(e);btn.textContent='Err';btn.classList.remove('saved');
+                setTimeout(()=>{btn.textContent='Save';render()},2000);
+            }
+        };
+
+        window.delCase=async function(id){
+            if(!confirm('Delete this case from local storage?'))return;
+            await ECDB.deleteCase(id);
+            savedIds.delete(String(id));
+            document.getElementById('sSaved').textContent=savedIds.size;
+            updateStorage();
+            render();
+        };
+
+        window.showStorageInfo=async function(){
+            const u=await ECDB.getStorageUsage();
+            alert('Used: '+ECDB.formatBytes(u.used)+'\nQuota: '+ECDB.formatBytes(u.quota)+'\nSaved: '+savedIds.size+' cases');
+        };
+        window.showResetModal=()=>document.getElementById('resetModal').classList.add('open');
+        window.closeResetModal=()=>document.getElementById('resetModal').classList.remove('open');
+        window.confirmReset=async()=>{
+            await ECDB.resetDB();
+            savedIds.clear();
+            document.getElementById('sSaved').textContent='0';
+            closeResetModal();updateStorage();render();
+        };
+
+        if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+        init();
+    })();
+    </script>
+</body>
+</html>

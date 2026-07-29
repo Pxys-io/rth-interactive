@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eContour Case 76 - Offline Viewer</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .viewer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .image-container {
+            position: relative;
+            width: 512px;
+            height: 512px;
+            border: 2px solid #333;
+            background: #000;
+        }
+        .image-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .controls button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background: #0056b3;
+        }
+        .controls input[type="range"] {
+            width: 300px;
+        }
+        .slice-info {
+            font-size: 14px;
+            color: #aaa;
+        }
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            max-width: 512px;
+            width: 100%;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            max-width: 512px;
+            width: 100%;
+        }
+        .overlay-controls {
+            margin-top: 15px;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewer-container">
+        <h1>eContour Case 76 - HCC SBRT</h1>
+        <p>64yo M with HCC - Child Pugh A</p>
+        
+        <div class="image-container">
+            <canvas id="ctCanvas" width="512" height="512"></canvas>
+            <canvas id="contourCanvas" width="512" height="512"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn">Previous</button>
+            <input type="range" id="sliceSlider" min="1" max="145" value="72">
+            <button id="nextBtn">Next</button>
+            <span class="slice-info">Slice: <span id="currentSlice">72</span> / 145</span>
+        </div>
+        
+        <div class="overlay-controls">
+            <label>
+                <input type="checkbox" id="showContours" checked> Show Contours
+            </label>
+            <label style="margin-left: 20px;">
+                <input type="checkbox" id="showOverlay"> Show CTART Overlay
+            </label>
+            <label style="margin-left: 20px;">
+                Overlay Opacity: <input type="range" id="overlayOpacity" min="0" max="100" value="50">
+            </label>
+        </div>
+        
+        <div class="legend" id="contourLegend">
+            <h3>Contour Legend</h3>
+            <div id="legendItems"></div>
+        </div>
+        
+        <div class="info-panel">
+            <h3>Case Information</h3>
+            <p><strong>Diagnosis:</strong> Hepatocellular Carcinoma (HCC)</p>
+            <p><strong>Stage:</strong> Child Pugh A</p>
+            <p><strong>Treatment:</strong> SBRT - 45Gy in 5 fractions</p>
+            <p><strong>Assessment:</strong> 64yo M with h/o HCV-related cirrhosis and HCC measuring 6.2cm</p>
+        </div>
+    </div>
+
+    <script src="assets/jquery-3.5.1.min.js"></script>
+    <script>
+        // Case data
+        const NUM_SLICES = 145;
+        const START_SLICE = 72;
+        const PATIENT_NAME = "PATIENT76";
+        
+        // State
+        let currentSlice = START_SLICE;
+        let showContours = true;
+        let showOverlay = false;
+        let overlayOpacity = 0.5;
+        let contours = [];
+        let contourRegions = {};
+        
+        // Canvases
+        const ctCanvas = document.getElementById('ctCanvas');
+        const contourCanvas = document.getElementById('contourCanvas');
+        const ctCtx = ctCanvas.getContext('2d');
+        const contourCtx = contourCanvas.getContext('2d');
+        
+        // Load contours
+        async function loadContours() {
+            try {
+                const response = await fetch('PATIENT76/contours.json');
+                contours = await response.json();
+                
+                // Extract unique regions
+                contours.forEach(c => {
+                    if (!contourRegions[c.id]) {
+                        contourRegions[c.id] = {
+                            id: c.id,
+                            name: c.name,
+                            color: c.color,
+                            type: c.type
+                        };
+                    }
+                });
+                
+                buildLegend();
+                drawSlice();
+            } catch (e) {
+                console.error('Error loading contours:', e);
+            }
+        }
+        
+        // Build legend
+        function buildLegend() {
+            const container = document.getElementById('legendItems');
+            container.innerHTML = '';
+            
+            Object.values(contourRegions).forEach(region => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <div class="legend-color" style="background: rgb(${region.color})"></div>
+                    <span>${region.name} (${region.type})</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        // Load and draw CT image
+        function drawSlice() {
+            // Update UI
+            document.getElementById('currentSlice').textContent = currentSlice;
+            document.getElementById('sliceSlider').value = currentSlice;
+            
+            // Load CT image
+            const ctImg = new Image();
+            ctImg.onload = () => {
+                ctCtx.drawImage(ctImg, 0, 0, 512, 512);
+                drawContours();
+            };
+            ctImg.src = `PATIENT76/CT/CT.${currentSlice}.jpg`;
+            
+            // Load overlay if enabled
+            if (showOverlay) {
+                const overlayImg = new Image();
+                overlayImg.onload = () => {
+                    contourCtx.globalAlpha = overlayOpacity;
+                    contourCtx.drawImage(overlayImg, 0, 0, 512, 512);
+                    contourCtx.globalAlpha = 1.0;
+                    drawContours();
+                };
+                overlayImg.src = `PATIENT76/CTART/CTART.${currentSlice}.jpg`;
+            }
+        }
+        
+        // Draw contours for current slice
+        function drawContours() {
+            contourCtx.clearRect(0, 0, 512, 512);
+            
+            if (!showContours) return;
+            
+            // Draw overlay first if enabled
+            if (showOverlay) {
+                const overlayImg = new Image();
+                overlayImg.onload = () => {
+                    contourCtx.globalAlpha = overlayOpacity;
+                    contourCtx.drawImage(overlayImg, 0, 0, 512, 512);
+                    contourCtx.globalAlpha = 1.0;
+                    drawContourPaths();
+                };
+                overlayImg.src = `PATIENT76/CTART/CTART.${currentSlice}.jpg`;
+            } else {
+                drawContourPaths();
+            }
+        }
+        
+        function drawContourPaths() {
+            // Filter contours for current slice
+            const sliceContours = contours.filter(c => c.sliceIndex === currentSlice);
+            
+            sliceContours.forEach(contour => {
+                if (!contour.points || contour.points.length < 2) return;
+                
+                const color = contour.color || '255,0,0';
+                const [r, g, b] = color.split(',').map(Number);
+                
+                contourCtx.strokeStyle = `rgb(${r},${g},${b})`;
+                contourCtx.lineWidth = 2;
+                contourCtx.beginPath();
+                
+                // Draw the contour path
+                const points = contour.points;
+                contourCtx.moveTo(points[0][0], points[0][1]);
+                
+                for (let i = 1; i < points.length; i++) {
+                    contourCtx.lineTo(points[i][0], points[i][1]);
+                }
+                
+                contourCtx.closePath();
+                contourCtx.stroke();
+                
+                // Fill with transparency
+                contourCtx.fillStyle = `rgba(${r},${g},${b},0.2)`;
+                contourCtx.fill();
+            });
+        }
+        
+        // Event listeners
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentSlice > 1) {
+                currentSlice--;
+                drawSlice();
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentSlice < NUM_SLICES) {
+                currentSlice++;
+                drawSlice();
+            }
+        });
+        
+        document.getElementById('sliceSlider').addEventListener('input', (e) => {
+            currentSlice = parseInt(e.target.value);
+            drawSlice();
+        });
+        
+        document.getElementById('showContours').addEventListener('change', (e) => {
+            showContours = e.target.checked;
+            drawContours();
+        });
+        
+        document.getElementById('showOverlay').addEventListener('change', (e) => {
+            showOverlay = e.target.checked;
+            drawContours();
+        });
+        
+        document.getElementById('overlayOpacity').addEventListener('input', (e) => {
+            overlayOpacity = parseInt(e.target.value) / 100;
+            drawContours();
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                if (currentSlice > 1) {
+                    currentSlice--;
+                    drawSlice();
+                }
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                if (currentSlice < NUM_SLICES) {
+                    currentSlice++;
+                    drawSlice();
+                }
+            }
+        });
+        
+        // Mouse wheel navigation
+        document.querySelector('.image-container').addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY > 0) {
+                if (currentSlice < NUM_SLICES) currentSlice++;
+            } else {
+                if (currentSlice > 1) currentSlice--;
+            }
+            drawSlice();
+        });
+        
+        // Initialize
+        loadContours();
+    </script>
+</body>
+</html>
