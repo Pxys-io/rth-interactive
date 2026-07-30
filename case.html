@@ -221,6 +221,7 @@
         let cur=0,el,stk;
         let tMode={GTV:FILL,CTV:FILL,PTV:FILL,TV:FILL,OAR:OUTLINE,ANT:FILL,OTHER:FILL};
         let rMode={};
+        let rModeBackup={};
         let settings={lineWidth:1.5,fillOpacity:0.2,defaultGTV:'fill',defaultCTV:'fill',defaultPTV:'fill',defaultTV:'fill',defaultOAR:'outline',defaultANT:'fill',scrollThreshold:25};
 
         function rgb(h){
@@ -421,13 +422,18 @@
 
         window._toggleROI=function(roi){
             const cur=getRMode(roi);
-            rMode[roi]=cur===HIDE?FILL:HIDE;
+            if(cur===HIDE){
+                rMode[roi]=rModeBackup[roi]||FILL;
+            }else{
+                rModeBackup[roi]=cur;
+                rMode[roi]=HIDE;
+            }
             buildLegend();
             if(el)cornerstone.updateImage(el);
         };
 
         window._sTM=(t,m)=>{tMode[t]=m;buildLegend();if(el)cornerstone.updateImage(el);};
-        window._sRM=(r,m)=>{rMode[r]=m;buildLegend();if(el)cornerstone.updateImage(el);};
+        window._sRM=(r,m)=>{if(m!==HIDE)rModeBackup[r]=m;rMode[r]=m;buildLegend();if(el)cornerstone.updateImage(el);};
         window.toggleDrawer=toggleDrawer;
 
         async function loadContours(){
