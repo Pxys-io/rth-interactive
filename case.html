@@ -43,7 +43,7 @@
         #dicomImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
         .hud { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); color: #fff; padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; pointer-events: none; z-index: 5; }
         .ov-tag { position: absolute; top: 10px; left: 10px; background: rgba(37,99,235,0.85); backdrop-filter: blur(8px); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 500; pointer-events: none; z-index: 5; display: none; }
-        .hint { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); color: var(--text3); padding: 5px 14px; border-radius: 20px; font-size: 11px; pointer-events: none; z-index: 5; white-space: nowrap; transition: opacity 0.5s; }
+        .hint { position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); color: var(--text3); padding: 5px 14px; border-radius: 20px; font-size: 11px; pointer-events: none; z-index: 5; white-space: nowrap; transition: opacity 0.5s; }
 
         /* Bottom */
         .bottom { background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); }
@@ -61,6 +61,14 @@
         .ov-wrap { display: flex; align-items: center; gap: 6px; padding: 0 12px 8px; }
         .ov-sel { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 6px; padding: 5px 8px; font-size: 11px; flex: 1; max-width: 180px; }
         .ov-op { width: 50px; }
+
+        /* Structure ribbon */
+        .struct-ribbon { position: absolute; bottom: 0; left: 0; right: 0; display: flex; gap: 4px; padding: 6px 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; background: linear-gradient(transparent, rgba(0,0,0,0.7)); z-index: 5; pointer-events: auto; }
+        .struct-chip { display: flex; align-items: center; gap: 4px; padding: 3px 8px 3px 5px; background: rgba(30,41,59,0.85); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; user-select: none; -webkit-user-select: none; }
+        .struct-chip:active { transform: scale(0.95); }
+        .struct-chip.off { opacity: 0.35; border-color: transparent; }
+        .struct-chip .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .struct-chip .sname { font-size: 10px; color: var(--text); font-weight: 500; }
 
         /* Sidebar */
         .sidebar { width: 340px; background: var(--surface); border-right: 1px solid var(--border); display: none; flex-direction: column; flex-shrink: 0; overflow: hidden; }
@@ -165,6 +173,7 @@
                 <div id="dicomImage"></div>
                 <div class="hud" id="hud">-- / --</div>
                 <div class="ov-tag" id="ovTag"></div>
+                <div class="struct-ribbon" id="structRibbon"></div>
                 <div class="hint" id="hint">1 finger pan &middot; pinch zoom &middot; 2 fingers scroll</div>
             </div>
             <div class="bottom">
@@ -388,7 +397,34 @@
             }
             document.getElementById('cLegend').innerHTML=h;
             document.getElementById('dcLegend').innerHTML=h;
+            updateRibbon();
         }
+
+        function updateRibbon(){
+            const seen={},items=[];
+            contours.forEach(c=>{
+                if(seen[c.ROINumber])return;seen[c.ROINumber]=true;
+                const r=regions[c.ROINumber]||{};
+                const t=getRType(c.ROINumber);
+                const rm=getRMode(c.ROINumber);
+                items.push({id:c.ROINumber,name:r.name||('R'+c.ROINumber),color:rgb(r.color||c.color),type:t,hidden:rm===HIDE});
+            });
+            const order={GTV:0,CTV:1,PTV:2,TV:3,OAR:4,ANT:5,OTHER:6};
+            items.sort((a,b)=>(order[a.type]||9)-(order[b.type]||9));
+            const el=document.getElementById('structRibbon');
+            el.innerHTML=items.map(s=>
+                '<div class="struct-chip'+(s.hidden?' off':'')+'" data-roi="'+s.id+'" onclick="window._toggleROI('+s.id+')">'+
+                '<div class="dot" style="background:rgb('+s.color+')"></div>'+
+                '<span class="sname">'+s.name+'</span></div>'
+            ).join('');
+        }
+
+        window._toggleROI=function(roi){
+            const cur=getRMode(roi);
+            rMode[roi]=cur===HIDE?FILL:HIDE;
+            buildLegend();
+            if(el)cornerstone.updateImage(el);
+        };
 
         window._sTM=(t,m)=>{tMode[t]=m;buildLegend();if(el)cornerstone.updateImage(el);};
         window._sRM=(r,m)=>{rMode[r]=m;buildLegend();if(el)cornerstone.updateImage(el);};
