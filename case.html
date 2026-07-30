@@ -348,13 +348,11 @@
 
         function getRType(n){
             const r=regions[n]||{};
-            if(r.type==='TV'){
-                const nm=(r.name||'').toUpperCase();
-                if(/\bGTV\b/.test(nm))return'GTV';
-                if(/\bCTV\b/.test(nm))return'CTV';
-                if(/\bPTV\b/.test(nm))return'PTV';
-                return'TV';
-            }
+            const nm=(r.name||'').toUpperCase();
+            if(/GTV|IGTV/.test(nm))return'GTV';
+            if(/CTV|ICTV/.test(nm))return'CTV';
+            if(/PTV/.test(nm))return'PTV';
+            if(/ITV/.test(nm))return'PTV';
             return r.type||'OTHER';
         }
         function getRMode(n){return rMode[n]||tMode[getRType(n)]||FILL;}
